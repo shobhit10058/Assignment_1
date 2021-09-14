@@ -184,7 +184,12 @@ class DecisionTree:
 			root.splitByBestGinyGain()
 		for ch_node in root.children:
 			self.recursion_train(ch_node, heuristic)
+	
+	# implement the following accuracy test
+	def test_accuracy(self, test: data) -> None:
+		pass
 
+	# add the procedures to add accuracy check at each depth
 	def train(self, examples: data, heuristic: str) -> None:
 		# train in bfs format
 		self.root.giveExamples(examples)
@@ -203,15 +208,16 @@ class DecisionTree:
 				depths.append(depths[i] + 1)
 			i += 1
 		
-		# uncomment following for testing
-		# tot = 0
-		# for i in range(len(queue) - 1, 0, -1):
-		# 	if len(queue[i].children) == 0:
-		# 		tot += len(queue[i].examples.values_of_attributes[0])
-		# if tot != len(examples.values_of_attributes[0]):
-		# 	print("Something fishy")
-		# else:
-		# 	print("Tree is proper")
+		# following lines for testing
+		# we can add more checks
+		tot = 0
+		for i in range(len(queue) - 1, 0, -1):
+			if len(queue[i].children) == 0:
+				tot += len(queue[i].examples.values_of_attributes[0])
+		if tot != len(examples.values_of_attributes[0]):
+			print("Something fishy")
+		else:
+			print("Tree is proper")
 
 		# uncomment following for recursive training
 		# self.recursion_train(self.root, heuristic)
@@ -221,3 +227,4 @@ train_data.readByFile('data/train.csv')
 
 model = DecisionTree()
 model.train(train_data, 'information_gain')
+model.train(train_data, 'gini_gain')
