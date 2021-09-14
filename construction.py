@@ -109,12 +109,13 @@ class node:
 
 		return child_nodes
 
-	def BestGinyGain(self):
+	def SplitByBestGinyGain(self):
 		# check if pure node
 		pass
 
-	def BestInformationGain(self):
+	def SplitByBestInformationGain(self):
 		# check if pure node
+
 		pass
 
 
