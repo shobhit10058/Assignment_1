@@ -15,21 +15,22 @@ class data:
 			for attr in self.attributes:
 				self.values_of_attributes.append([])
 			
+			line = 0
 			while(1):
-				ps_e = inp.readline()[:-1].split(',')
-
-				if len(ps_e) == 0:
+				read_str = inp.readline()[:-1]
+				if len(read_str) == 0:
 					break
-				
+				ps_e = read_str.split(',')
 				for col in range(len(ps_e)):
 					self.values_of_attributes[col].append(ps_e[col])
 
 	def initAttr(self, attributes: list):
 		self.attributes = attributes
+		self.values_of_attributes = [[] for _ in range(len(self.attributes))]
 
 	def addExample(self, values):
 		for attr_indx in range(len(values)):
-			self.values_of_attributes.append(values[attr_indx])
+			self.values_of_attributes[attr_indx].append(values[attr_indx])
 
 	def FillMissingVal(self) -> None:
 		pass
@@ -74,8 +75,8 @@ class node:
 			
 			if not ps_val in child_nodes:
 				child_nodes[ps_val] = node()
-
-			child_nodes[ps_val].giveAttributes(ps_attr_indx)
+				child_nodes[ps_val].giveAttributes(ps_attrs)
+			
 			ps_example = []
 			
 			for ps_attr_indx in range(len(self.examples.attributes)):
@@ -84,10 +85,15 @@ class node:
 
 			child_nodes[ps_val].addExample(ps_example)
 
-		return child_nodes
+		cont_child_nodes = []
+
+		for ch_attr_val in child_nodes:
+			cont_child_nodes.append(child_nodes[ch_attr_val])
+		
+		return cont_child_nodes
 	
 	def entropy(self):
-		class_count = self.getclassCount()
+		class_count = self.getClassCount()
 		entropy_value = 0
 
 		for vals in class_count:
@@ -97,7 +103,7 @@ class node:
 		return entropy_value
 
 	def ginnnyIndex(self):
-		class_count = self.getclassCount()
+		class_count = self.getClassCount()
 		giny_indx = 1
 		
 		for vals in class_count:
@@ -112,7 +118,7 @@ class node:
 		
 		for cont_child in cont_child_nodes:
 			prob = len(cont_child.examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
-			entropy_change -= prob * cont_child.entropy()
+			entropy_change -= (prob * cont_child.entropy())
 
 		return entropy_change
 
@@ -122,7 +128,7 @@ class node:
 		
 		for cont_child in cont_child_nodes:
 			prob = len(cont_child.examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
-			gini_change -= prob * cont_child.ginnnyIndex()
+			gini_change -= prob * (cont_child.ginnnyIndex())
 
 		return gini_change
 	
@@ -132,7 +138,7 @@ class node:
 		if(self.ginnnyIndex() == 0):
 			return
 		best_gain = 0
-		best_attr_indx = 0
+		best_attr_indx = -1
 
 		for cont_attr_index in range(len(self.examples.attributes) - 1):
 			ps_gain = self.giniGain(cont_attr_index)
@@ -140,12 +146,11 @@ class node:
 			if ps_gain > best_gain:
 				best_gain = ps_gain
 				best_attr_indx = cont_attr_index
-			
-		new_child_nodes = self.splitNode(best_attr_indx)
-		self.children = []
-
-		for ch_attr_val in new_child_nodes:
-			self.children.append(new_child_nodes[ch_attr_val])
+		
+		if(best_attr_indx == -1):
+			return	
+		
+		self.children = self.splitNode(best_attr_indx)
 
 	# assigns the children by splitting with best information gain attribute	
 	def splitByBestInformationGain(self) -> None:
@@ -153,7 +158,7 @@ class node:
 		if(self.entropy() == 0):
 			return
 		best_gain = 0
-		best_attr_indx = 0
+		best_attr_indx = -1
 
 		for cont_attr_index in range(len(self.examples.attributes) - 1):
 			ps_gain = self.informationGain(cont_attr_index)
@@ -162,11 +167,10 @@ class node:
 				best_gain = ps_gain
 				best_attr_indx = cont_attr_index
 			
-		new_child_nodes = self.splitNode(best_attr_indx)
-		self.children = []
+		if(best_attr_indx == -1):
+			return	
 		
-		for ch_attr_val in new_child_nodes:
-			self.children.append(new_child_nodes[ch_attr_val])
+		self.children = self.splitNode(best_attr_indx)
 
 class DecisionTree:
 
