@@ -22,7 +22,7 @@ class data:
 				if len(ps_e) == 0:
 					break
 				
-				for col in range(ps_e):
+				for col in range(len(ps_e)):
 					self.values_of_attributes[col].append(ps_e[col])
 
 	def initAttr(self, attributes: list):
@@ -37,7 +37,6 @@ class data:
 
 	def split(self, test_frac):
 		pass
-
 
 class node:
 
@@ -65,26 +64,6 @@ class node:
 
 		return class_count
 
-	def entropy(self):
-		class_count = self.getclassCount()
-		entropy_value = 0
-
-		for vals in class_count:
-			class_count[vals] /= len(self.examples.values_of_attributes[-1])
-			entropy_value -= (class_count[vals] * log2(class_count[vals]))
-		
-		return entropy_value
-
-	def GinnnyIndex(self):
-		class_count = self.getclassCount()
-		giny_indx = 1
-		
-		for vals in class_count:
-			class_count[vals] /= len(self.examples.values_of_attributes[-1])
-			giny_indx -= (class_count[vals] ** 2)
-			
-		return giny_indx
-
 	def splitNode(self, attr_indx):
 		child_nodes = {}
 
@@ -94,7 +73,6 @@ class node:
 		for ps_ex_indx in range(len(self.examples.values_of_attributes[attr_indx])):
 			ps_val = self.examples.values_of_attributes[attr_indx][ps_ex_indx]
 			
-
 			if not ps_val in child_nodes:
 				child_nodes[ps_val] = node()
 
@@ -108,21 +86,94 @@ class node:
 			child_nodes[ps_val].addExample(ps_example)
 
 		return child_nodes
+	
+	def entropy(self):
+		class_count = self.getclassCount()
+		entropy_value = 0
 
-	def SplitByBestGinyGain(self):
+		for vals in class_count:
+			class_count[vals] /= len(self.examples.values_of_attributes[-1])
+			entropy_value -= (class_count[vals] * log2(class_count[vals]))
+		
+		return entropy_value
+
+	def ginnnyIndex(self):
+		class_count = self.getclassCount()
+		giny_indx = 1
+		
+		for vals in class_count:
+			class_count[vals] /= len(self.examples.values_of_attributes[-1])
+			giny_indx -= (class_count[vals] ** 2)
+			
+		return giny_indx
+
+	def informationGain(self, attr_indx):
+		entropy_change = self.entropy()
+		cont_child_nodes = self.splitNode(attr_indx)
+		
+		for cont_child in cont_child_nodes:
+			prob = len(cont_child.examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
+			entropy_change -= prob * cont_child.entropy()
+
+		return entropy_change
+
+	def giniGain(self, attr_indx):
+		gini_change = self.ginnnyIndex()
+		cont_child_nodes = self.splitNode(attr_indx)
+		
+		for cont_child in cont_child_nodes:
+			prob = len(cont_child.examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
+			gini_change -= prob * cont_child.ginnnyIndex()
+
+		return gini_change
+	
+	# assigns the children by splitting with best giny gain attribute
+	def splitByBestGinyGain(self) -> None:
 		# check if pure node
-		pass
+		if(self.ginnnyIndex() == 0):
+			return
+		best_gain = 0
+		best_attr_indx = 0
 
-	def SplitByBestInformationGain(self):
+		for cont_attr_index in range(len(self.examples.attributes) - 1):
+			ps_gain = self.giniGain(cont_attr_index)
+
+			if ps_gain > best_gain:
+				best_gain = ps_gain
+				best_attr_indx = cont_attr_index
+			
+		new_child_nodes = self.splitNode(best_attr_indx)
+		self.children = []
+
+		for ch_attr_val in new_child_nodes:
+			self.children.append(new_child_nodes[ch_attr_val])
+
+	# assigns the children by splitting with best information gain attribute	
+	def splitByBestInformationGain(self) -> None:
 		# check if pure node
+		if(self.entropy() == 0):
+			return
+		best_gain = 0
+		best_attr_indx = 0
 
-		pass
+		for cont_attr_index in range(len(self.examples.attributes) - 1):
+			ps_gain = self.informationGain(cont_attr_index)
 
+			if ps_gain > best_gain:
+				best_gain = ps_gain
+				best_attr_indx = cont_attr_index
+			
+		new_child_nodes = self.splitNode(best_attr_indx)
+		self.children = []
+		
+		for ch_attr_val in new_child_nodes:
+			self.children.append(new_child_nodes[ch_attr_val])
 
 class DecisionTree:
 
 	def __init__(self) -> None:
 		self.root = node()
 
-	def train(examples: data) -> None:
+	def train(examples: data, heuristic: str) -> None:
+		# train in bfs format
 		pass
