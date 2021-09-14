@@ -1,0 +1,16 @@
+583 rows
+Following are the columns -
+age                 583
+gender              583
+tot_bilirubin       583
+direct_bilirubin    583
+tot_proteins        583
+albumin             583
+ag_ratio            583
+sgpt                583
+sgot                583
+alkphos             579
+is_patient          583
+
+alkphos has 4 null values.
+
