@@ -188,7 +188,33 @@ class DecisionTree:
 	def train(self, examples: data, heuristic: str) -> None:
 		# train in bfs format
 		self.root.giveExamples(examples)
-		self.recursion_train(self.root, heuristic)
+		queue = []
+		depths = []
+		queue.append(self.root)
+		depths.append(0)
+		i = 0
+		while i < len(queue):
+			if(heuristic == "information_gain"):
+				queue[i].splitByBestInformationGain()
+			else:
+				queue[i].splitByBestGinyGain()
+			queue.extend(queue[i].children)
+			for _ in range(len(queue[i].children)):
+				depths.append(depths[i] + 1)
+			i += 1
+		
+		# uncomment following for testing
+		# tot = 0
+		# for i in range(len(queue) - 1, 0, -1):
+		# 	if len(queue[i].children) == 0:
+		# 		tot += len(queue[i].examples.values_of_attributes[0])
+		# if tot != len(examples.values_of_attributes[0]):
+		# 	print("Something fishy")
+		# else:
+		# 	print("Tree is proper")
+
+		# uncomment following for recursive training
+		# self.recursion_train(self.root, heuristic)
 
 train_data = data()
 train_data.readByFile('data/train.csv')
