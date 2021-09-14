@@ -17,7 +17,7 @@ class data:
 				self.attributes.append(attr)
 			
 			while(1):
-				ps_e = inp.readline(',')
+				ps_e = inp.readline().split(',')
 
 				if len(ps_e) == 0:
 					break
@@ -174,6 +174,21 @@ class DecisionTree:
 	def __init__(self) -> None:
 		self.root = node()
 
-	def train(examples: data, heuristic: str) -> None:
+	def recursion_train(self, root, heuristic: str):
+		if(heuristic == "information_gain"):
+			root.splitByBestInformationGain()
+		else:
+			root.splitByBestGinyGain()
+		for ch_node in root.children:
+			self.recursion_train(ch_node, heuristic)
+
+	def train(self, examples: data, heuristic: str) -> None:
 		# train in bfs format
-		pass
+		self.root.giveExamples(examples)
+		self.recursion_train(self.root, heuristic)
+
+train_data = data()
+train_data.readByFile('data/train.csv')
+
+model = DecisionTree()
+model.train(train_data, 'information_gain')
