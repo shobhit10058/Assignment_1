@@ -131,29 +131,9 @@ class node:
 			gini_change -= prob * (cont_child.ginnnyIndex())
 
 		return gini_change
-	
-	# assigns the children by splitting with best giny gain attribute
-	def splitByBestGinyGain(self) -> None:
-		# check if pure node
-		if(self.ginnnyIndex() == 0):
-			return
-		best_gain = 0
-		best_attr_indx = -1
 
-		for cont_attr_index in range(len(self.examples.attributes) - 1):
-			ps_gain = self.giniGain(cont_attr_index)
-
-			if ps_gain > best_gain:
-				best_gain = ps_gain
-				best_attr_indx = cont_attr_index
-		
-		if(best_attr_indx == -1):
-			return	
-		
-		self.children = self.splitNode(best_attr_indx)
-
-	# assigns the children by splitting with best information gain attribute	
-	def splitByBestInformationGain(self) -> None:
+	# assigns the children by splitting with best gain attribute	
+	def splitByHeuristic(self, heuristic) -> None:
 		# check if pure node
 		if(self.entropy() == 0):
 			return
@@ -161,8 +141,12 @@ class node:
 		best_attr_indx = -1
 
 		for cont_attr_index in range(len(self.examples.attributes) - 1):
-			ps_gain = self.informationGain(cont_attr_index)
-
+			ps_gain = 0
+			if(heuristic == "information_gain"):
+				ps_gain = self.informationGain(cont_attr_index)
+			else:
+				ps_gain = self.giniGain(cont_attr_index)
+			
 			if ps_gain > best_gain:
 				best_gain = ps_gain
 				best_attr_indx = cont_attr_index
@@ -178,10 +162,7 @@ class DecisionTree:
 		self.root = node()
 
 	def recursion_train(self, root, heuristic: str):
-		if(heuristic == "information_gain"):
-			root.splitByBestInformationGain()
-		else:
-			root.splitByBestGinyGain()
+		root.splitByHeuristic(heuristic)
 		for ch_node in root.children:
 			self.recursion_train(ch_node, heuristic)
 	
@@ -199,10 +180,7 @@ class DecisionTree:
 		depths.append(0)
 		i = 0
 		while i < len(queue):
-			if(heuristic == "information_gain"):
-				queue[i].splitByBestInformationGain()
-			else:
-				queue[i].splitByBestGinyGain()
+			queue[i].splitByHeuristic(heuristic)
 			queue.extend(queue[i].children)
 			for _ in range(len(queue[i].children)):
 				depths.append(depths[i] + 1)
