@@ -9,15 +9,14 @@ class data:
 	def readByFile(self, input_file: str) -> None:
 		
 		with open(input_file) as inp:
-			self.attributes = inp.readline().split(',')
+			self.attributes = inp.readline()[:-1].split(',')
 			self.values_of_attributes = []
 
 			for attr in self.attributes:
 				self.values_of_attributes.append([])
-				self.attributes.append(attr)
 			
 			while(1):
-				ps_e = inp.readline().split(',')
+				ps_e = inp.readline()[:-1].split(',')
 
 				if len(ps_e) == 0:
 					break
