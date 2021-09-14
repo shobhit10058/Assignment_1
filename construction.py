@@ -166,6 +166,11 @@ class DecisionTree:
 		for ch_node in root.children:
 			self.recursion_train(ch_node, heuristic)
 	
+	# use the value of target attribute stored in -1 index in values of attributes
+	# in leaf node at which test data arrives
+	def predict(self, test: data):
+		pass
+
 	# implement the following accuracy test
 	def test_accuracy(self, test: data) -> None:
 		pass
