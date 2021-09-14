@@ -65,7 +65,7 @@ class node:
 		return class_count
 
 	def splitNode(self, attr_indx):
-		child_nodes = {}
+		map_val_to_children = {}
 
 		ps_attrs = self.examples.attributes[:attr_indx]
 		ps_attrs.extend(self.examples.attributes[attr_indx + 1:])
@@ -73,9 +73,9 @@ class node:
 		for ps_ex_indx in range(len(self.examples.values_of_attributes[attr_indx])):
 			ps_val = self.examples.values_of_attributes[attr_indx][ps_ex_indx]
 			
-			if not ps_val in child_nodes:
-				child_nodes[ps_val] = node()
-				child_nodes[ps_val].giveAttributes(ps_attrs)
+			if not ps_val in map_val_to_children:
+				map_val_to_children[ps_val] = node()
+				map_val_to_children[ps_val].giveAttributes(ps_attrs)
 			
 			ps_example = []
 			
@@ -83,12 +83,12 @@ class node:
 				if ps_attr_indx != attr_indx:
 					ps_example.append(self.examples.values_of_attributes[ps_attr_indx][ps_ex_indx])
 
-			child_nodes[ps_val].addExample(ps_example)
+			map_val_to_children[ps_val].addExample(ps_example)
 
 		cont_child_nodes = []
 
-		for ch_attr_val in child_nodes:
-			cont_child_nodes.append(child_nodes[ch_attr_val])
+		for ch_attr_val in map_val_to_children:
+			cont_child_nodes.append(map_val_to_children[ch_attr_val])
 		
 		return cont_child_nodes
 	
