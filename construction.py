@@ -151,12 +151,12 @@ class node:
 		# check if pure node
 		if(self.entropy() == 0):
 			return
-		best_gain = 0
+		best_gain = -1
 		best_attr_indx = -1
 
 		for cont_attr_index in range(len(self.examples.attributes) - 1):
 			ps_gain = 0
-			if(heuristic == "information_gain"):
+			if(heuristic == 'information_gain'):
 				ps_gain = self.informationGain(cont_attr_index)
 			else:
 				ps_gain = self.giniGain(cont_attr_index)
@@ -232,7 +232,6 @@ class DecisionTree:
 				depths.append(depths[i] + 1)
 				queue.append(queue[i].children[val])
 			i += 1
-		
 		# following lines for testing
 		# we can add more checks
 		tot = 0
@@ -254,6 +253,7 @@ train_data, test_data = org_data.split(0.2)
 
 model = DecisionTree()
 model.train(train_data, 'information_gain')
-model.train(train_data, 'gini_gain')
+print(model.test_accuracy(test_data))
 
+model.train(train_data, 'gini_gain')
 print(model.test_accuracy(test_data))
