@@ -16,7 +16,6 @@ class data:
 			for attr in self.attributes:
 				self.values_of_attributes.append([])
 			
-			line = 0
 			while(1):
 				read_str = inp.readline()[:-1]
 				if len(read_str) == 0:
@@ -34,7 +33,27 @@ class data:
 			self.values_of_attributes[attr_indx].append(values[attr_indx])
 
 	def FillMissingVal(self) -> None:
-		pass
+		for attr_ind in range(len(self.attributes)):
+			co_vals = {}
+			ms_val = ""
+			ms_co  = 0
+			
+			for val_ind in range(len(self.values_of_attributes[attr_ind])):
+				ps_v = self.values_of_attributes[attr_ind][val_ind]
+				if len(ps_v) == 0:
+					continue
+				if not ps_v in co_vals:
+					co_vals[ps_v] = 0
+				co_vals[ps_v] += 1
+				if ms_co <= co_vals[ps_v]:
+					ms_co = co_vals[ps_v]
+					ms_val = ps_v
+			
+			for val_ind in range(len(self.values_of_attributes[attr_ind])):
+				ps_v = self.values_of_attributes[attr_ind][val_ind]
+				if len(ps_v) == 0:
+					self.values_of_attributes[attr_ind][val_ind] = ms_val
+					continue
 
 	def split(self, test_frac):
 		data_size = len(self.values_of_attributes[0])
@@ -251,6 +270,7 @@ class DecisionTree:
 
 org_data = data()
 org_data.readByFile('data/train.csv')
+org_data.FillMissingVal()
 
 train_data, test_data = org_data.split(0.2)
 
