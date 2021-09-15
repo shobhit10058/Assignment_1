@@ -39,8 +39,8 @@ class data:
 	def split(self, test_frac):
 		data_size = len(self.values_of_attributes[0])
 		test_size = int(test_frac * data_size)
-		indices = set([_ for _ in range(data_size)])
-		chosen_test_ind = random.sample(indices, test_size)
+		indices = [_ for _ in range(data_size)]
+		chosen_test_ind = set(random.sample(indices, test_size))
 		train_data = data()
 		test_data = data()
 		train_data.initAttr(self.attributes)
@@ -49,7 +49,7 @@ class data:
 			example = []
 			for attr_ind in range(len(self.attributes)):
 				example.append(self.values_of_attributes[attr_ind][ex_ind])
-			if ex_ind in indices:
+			if ex_ind in chosen_test_ind:
 				test_data.addExample(example)
 			else:
 				train_data.addExample(example)
@@ -182,17 +182,41 @@ class DecisionTree:
 			self.recursion_train(root.children[ch_val], heuristic)
 	
 	def predictInstance(self, example: list):
-		pass
+		ps_node = self.root
+		while(len(ps_node.children) > 0):
+			ps_val = example[ps_node.split_attr_indx]
+			if not ps_val in ps_node.children:
+				break
+			ps_node = ps_node.children[ps_val]
+		class_count = ps_node.getClassCount()
+		count = 0
+		pred = 0
+		for val in class_count:
+			if count < class_count[val]:
+				count = class_count[val]
+				pred = val
+		return pred
 
 	# use the value of target attribute stored in -1 index in values of attributes
 	# in leaf node at which test data arrives
 	def predictTest(self, test: data):
-		pass
+		predictions = []
+		for ex_ind in range(len(test.values_of_attributes[0])):
+			test_inst = []
+			for attr_ind in range(len(test.attributes)):
+				test_inst.append(test.values_of_attributes[attr_ind][ex_ind])
+			predictions.append(self.predictInstance(test_inst))
+		return predictions
 
 	# implement the following accuracy test
-	def test_accuracy(self, test: data) -> None:
-		pass
-
+	def test_accuracy(self, test: data) -> float:
+		predictions = self.predictTest(test)
+		gt_corr = 0
+		tot = len(predictions)
+		for i in range(tot):
+			gt_corr += (predictions[i] == test.values_of_attributes[-1][i])
+		return gt_corr / tot
+	
 	# add the procedures to add accuracy check at each depth
 	def train(self, examples: data, heuristic: str) -> None:
 		# train in bfs format
@@ -231,3 +255,5 @@ train_data, test_data = org_data.split(0.2)
 model = DecisionTree()
 model.train(train_data, 'information_gain')
 model.train(train_data, 'gini_gain')
+
+print(model.test_accuracy(test_data))
