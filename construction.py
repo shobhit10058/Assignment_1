@@ -218,7 +218,7 @@ class DecisionTree:
 		return gt_corr / tot
 	
 	# add the procedures to add accuracy check at each depth
-	def train(self, examples: data, heuristic: str) -> None:
+	def train(self, examples: data, heuristic: str, test: data) -> None:
 		# train in bfs format
 		self.root.giveExamples(examples)
 		queue = []
@@ -226,11 +226,13 @@ class DecisionTree:
 		queue.append(self.root)
 		depths.append(0)
 		i = 0
+		f_acc = open(heuristic + "_model_acc_chang" + ".txt", 'w')
 		while i < len(queue):
 			queue[i].splitByHeuristic(heuristic)
 			for val in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(queue[i].children[val])
+			f_acc.write(str(self.test_accuracy(test_data)) + " depth= " + str(depths[i]) + '\n')
 			i += 1
 		# following lines for testing
 		# we can add more checks
@@ -252,8 +254,8 @@ org_data.readByFile('data/train.csv')
 train_data, test_data = org_data.split(0.2)
 
 model = DecisionTree()
-model.train(train_data, 'information_gain')
+model.train(train_data, 'information_gain', test_data)
 print(model.test_accuracy(test_data))
 
-model.train(train_data, 'gini_gain')
+model.train(train_data, 'gini_gain', test_data)
 print(model.test_accuracy(test_data))
