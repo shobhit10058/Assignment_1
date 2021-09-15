@@ -42,8 +42,9 @@ class node:
 
 	def __init__(self) -> None:
 		self.examples = data()
+		self.split_attr_indx = -1
 		# list of nodes
-		self.children = []
+		self.children = {}
 
 	def giveAttributes(self, attributes: list) -> None:
 		self.examples.initAttr(attributes)
@@ -85,12 +86,7 @@ class node:
 
 			map_val_to_children[ps_val].addExample(ps_example)
 
-		cont_child_nodes = []
-
-		for ch_attr_val in map_val_to_children:
-			cont_child_nodes.append(map_val_to_children[ch_attr_val])
-		
-		return cont_child_nodes
+		return map_val_to_children
 	
 	def entropy(self):
 		class_count = self.getClassCount()
@@ -116,9 +112,9 @@ class node:
 		entropy_change = self.entropy()
 		cont_child_nodes = self.splitNode(attr_indx)
 		
-		for cont_child in cont_child_nodes:
-			prob = len(cont_child.examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
-			entropy_change -= (prob * cont_child.entropy())
+		for val in cont_child_nodes:
+			prob = len(cont_child_nodes[val].examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
+			entropy_change -= (prob * cont_child_nodes[val].entropy())
 
 		return entropy_change
 
@@ -126,9 +122,9 @@ class node:
 		gini_change = self.ginnnyIndex()
 		cont_child_nodes = self.splitNode(attr_indx)
 		
-		for cont_child in cont_child_nodes:
-			prob = len(cont_child.examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
-			gini_change -= prob * (cont_child.ginnnyIndex())
+		for val in cont_child_nodes:
+			prob = len(cont_child_nodes[val].examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
+			gini_change -= (prob * cont_child_nodes[val].ginnnyIndex())
 
 		return gini_change
 
@@ -155,6 +151,7 @@ class node:
 			return	
 		
 		self.children = self.splitNode(best_attr_indx)
+		self.split_attr_indx = best_attr_indx
 
 class DecisionTree:
 
@@ -163,8 +160,8 @@ class DecisionTree:
 
 	def recursion_train(self, root, heuristic: str):
 		root.splitByHeuristic(heuristic)
-		for ch_node in root.children:
-			self.recursion_train(ch_node, heuristic)
+		for ch_val in root.children:
+			self.recursion_train(root.children[ch_val], heuristic)
 	
 	# use the value of target attribute stored in -1 index in values of attributes
 	# in leaf node at which test data arrives
@@ -186,9 +183,9 @@ class DecisionTree:
 		i = 0
 		while i < len(queue):
 			queue[i].splitByHeuristic(heuristic)
-			queue.extend(queue[i].children)
-			for _ in range(len(queue[i].children)):
+			for val in (queue[i].children):
 				depths.append(depths[i] + 1)
+				queue.append(queue[i].children[val])
 			i += 1
 		
 		# following lines for testing
