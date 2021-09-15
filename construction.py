@@ -252,8 +252,8 @@ class DecisionTree:
 		depths = [0]
 		values = [0]
 		i = 0
-		# f_acc = open(heuristic + "_model_acc_chang" + ".csv", 'w')
-		# f_acc.write("depth,accuracy\n")
+		f_acc = open(heuristic + "_model_acc_chang" + ".csv", 'w')
+		f_acc.write("depth,accuracy\n")
 		f = open(heuristic + ".txt", 'w')
 		while i < len(queue):
 			queue[i].splitByHeuristic(heuristic)
@@ -264,7 +264,7 @@ class DecisionTree:
 				depths.append(depths[i] + 1)
 				queue.append(queue[i].children[val])
 				values.append(val)
-			# f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test_data)) + '\n')
+			f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test_data)) + '\n')
 			i += 1
 		# following lines for testing
 		# we can add more checks
