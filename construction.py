@@ -1,4 +1,5 @@
 from math import log2
+import random
 
 class data:
 	
@@ -36,7 +37,24 @@ class data:
 		pass
 
 	def split(self, test_frac):
-		pass
+		data_size = len(self.values_of_attributes[0])
+		test_size = int(test_frac * data_size)
+		indices = set([_ for _ in range(data_size)])
+		chosen_test_ind = random.sample(indices, test_size)
+		train_data = data()
+		test_data = data()
+		train_data.initAttr(self.attributes)
+		test_data.initAttr(self.attributes)
+		for ex_ind in range(data_size):
+			example = []
+			for attr_ind in range(len(self.attributes)):
+				example.append(self.values_of_attributes[attr_ind][ex_ind])
+			if ex_ind in indices:
+				test_data.addExample(example)
+			else:
+				train_data.addExample(example)
+			
+		return (train_data, test_data)
 
 class node:
 
@@ -163,9 +181,12 @@ class DecisionTree:
 		for ch_val in root.children:
 			self.recursion_train(root.children[ch_val], heuristic)
 	
+	def predictInstance(self, example: list):
+		pass
+
 	# use the value of target attribute stored in -1 index in values of attributes
 	# in leaf node at which test data arrives
-	def predict(self, test: data):
+	def predictTest(self, test: data):
 		pass
 
 	# implement the following accuracy test
@@ -202,8 +223,10 @@ class DecisionTree:
 		# uncomment following for recursive training
 		# self.recursion_train(self.root, heuristic)
 
-train_data = data()
-train_data.readByFile('data/train.csv')
+org_data = data()
+org_data.readByFile('data/train.csv')
+
+train_data, test_data = org_data.split(0.2)
 
 model = DecisionTree()
 model.train(train_data, 'information_gain')
