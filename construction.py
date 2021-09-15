@@ -4,42 +4,45 @@ import random
 class data:
 	
 	def __init__(self) -> None:
-		self.attributes = []
-		self.values_of_attributes = []	
+		self.attributes = set()
+		self.values_of_attributes = {}	
 	
 	def readByFile(self, input_file: str) -> None:
 		
 		with open(input_file) as inp:
-			self.attributes = inp.readline()[:-1].split(',')
-			self.values_of_attributes = []
+			self.attributes = list(inp.readline()[:-1].split(','))
+			self.values_of_attributes = {}
 
 			for attr in self.attributes:
-				self.values_of_attributes.append([])
+				self.values_of_attributes[attr] = []
 			
 			while(1):
 				read_str = inp.readline()[:-1]
 				if len(read_str) == 0:
 					break
-				ps_e = read_str.split(',')
-				for col in range(len(ps_e)):
-					self.values_of_attributes[col].append(ps_e[col])
+				ps_e = list(read_str.split(','))
+				indx = 0
+				for attr in self.attributes:
+					self.values_of_attributes[attr].append(ps_e[indx])
+					indx += 1
+			self.attributes = set(self.attributes)
 
-	def initAttr(self, attributes: list):
+	def initAttr(self, attributes: set):
 		self.attributes = attributes
-		self.values_of_attributes = [[] for _ in range(len(self.attributes))]
+		self.values_of_attributes = {attr:[] for attr in (self.attributes)}
 
-	def addExample(self, values):
-		for attr_indx in range(len(values)):
-			self.values_of_attributes[attr_indx].append(values[attr_indx])
+	def addExample(self, values: dict):
+		for attr in self.attributes:
+			self.values_of_attributes[attr].append(values[attr])
 
 	def FillMissingVal(self) -> None:
-		for attr_ind in range(len(self.attributes)):
+		for attr in (self.attributes):
 			co_vals = {}
 			ms_val = ""
 			ms_co  = 0
 			
-			for val_ind in range(len(self.values_of_attributes[attr_ind])):
-				ps_v = self.values_of_attributes[attr_ind][val_ind]
+			for val_ind in range(len(self.values_of_attributes[attr])):
+				ps_v = self.values_of_attributes[attr][val_ind]
 				if len(ps_v) == 0:
 					continue
 				if not ps_v in co_vals:
@@ -49,14 +52,15 @@ class data:
 					ms_co = co_vals[ps_v]
 					ms_val = ps_v
 			
-			for val_ind in range(len(self.values_of_attributes[attr_ind])):
-				ps_v = self.values_of_attributes[attr_ind][val_ind]
+			for val_ind in range(len(self.values_of_attributes[attr])):
+				ps_v = self.values_of_attributes[attr][val_ind]
 				if len(ps_v) == 0:
-					self.values_of_attributes[attr_ind][val_ind] = ms_val
-					continue
+					self.values_of_attributes[attr][val_ind] = ms_val
 
 	def split(self, test_frac):
-		data_size = len(self.values_of_attributes[0])
+		any_attr = self.attributes.pop()
+		self.attributes.add(any_attr)
+		data_size = len(self.values_of_attributes[any_attr])
 		test_size = int(test_frac * data_size)
 		indices = [_ for _ in range(data_size)]
 		chosen_test_ind = set(random.sample(indices, test_size))
@@ -65,9 +69,9 @@ class data:
 		train_data.initAttr(self.attributes)
 		test_data.initAttr(self.attributes)
 		for ex_ind in range(data_size):
-			example = []
-			for attr_ind in range(len(self.attributes)):
-				example.append(self.values_of_attributes[attr_ind][ex_ind])
+			example = {}
+			for attr in (self.attributes):
+				example[attr] = (self.values_of_attributes[attr][ex_ind])
 			if ex_ind in chosen_test_ind:
 				test_data.addExample(example)
 			else:
@@ -77,16 +81,17 @@ class data:
 
 class node:
 
-	def __init__(self) -> None:
+	def __init__(self, target) -> None:
 		self.examples = data()
-		self.split_attr_indx = -1
+		self.split_attr = ""
 		# list of nodes
 		self.children = {}
+		self.target_attr = target
 
-	def giveAttributes(self, attributes: list) -> None:
+	def giveAttributes(self, attributes: set) -> None:
 		self.examples.initAttr(attributes)
 	
-	def addExample(self, example: list) -> None:
+	def addExample(self, example: dict) -> None:
 		self.examples.addExample(example)
 
 	def giveExamples(self, examples: data) -> None:
@@ -95,31 +100,31 @@ class node:
 	def getClassCount(self):
 		class_count = {}
 
-		for entry in self.examples.values_of_attributes[-1]:
+		for entry in self.examples.values_of_attributes[self.target_attr]:
 			if not entry in class_count:
 				class_count[entry] = 0
 			class_count[entry] += 1
 
 		return class_count
 
-	def splitNode(self, attr_indx):
+	def splitNode(self, attr):
 		map_val_to_children = {}
 
-		ps_attrs = self.examples.attributes[:attr_indx]
-		ps_attrs.extend(self.examples.attributes[attr_indx + 1:])
+		ps_attrs = set(self.examples.attributes)
+		ps_attrs.remove(attr)
 		
-		for ps_ex_indx in range(len(self.examples.values_of_attributes[attr_indx])):
-			ps_val = self.examples.values_of_attributes[attr_indx][ps_ex_indx]
+		for ps_ex_indx in range(len(self.examples.values_of_attributes[attr])):
+			ps_val = self.examples.values_of_attributes[attr][ps_ex_indx]
 			
 			if not ps_val in map_val_to_children:
-				map_val_to_children[ps_val] = node()
+				map_val_to_children[ps_val] = node(self.target_attr)
 				map_val_to_children[ps_val].giveAttributes(ps_attrs)
 			
-			ps_example = []
+			ps_example = {}
 			
-			for ps_attr_indx in range(len(self.examples.attributes)):
-				if ps_attr_indx != attr_indx:
-					ps_example.append(self.examples.values_of_attributes[ps_attr_indx][ps_ex_indx])
+			for ps_attr in self.examples.attributes:
+				if ps_attr != attr:
+					ps_example[ps_attr] = self.examples.values_of_attributes[ps_attr][ps_ex_indx]
 
 			map_val_to_children[ps_val].addExample(ps_example)
 
@@ -130,7 +135,7 @@ class node:
 		entropy_value = 0
 
 		for vals in class_count:
-			class_count[vals] /= len(self.examples.values_of_attributes[-1])
+			class_count[vals] /= len(self.examples.values_of_attributes[self.target_attr])
 			entropy_value -= (class_count[vals] * log2(class_count[vals]))
 		
 		return entropy_value
@@ -140,27 +145,27 @@ class node:
 		giny_indx = 1
 		
 		for vals in class_count:
-			class_count[vals] /= len(self.examples.values_of_attributes[-1])
+			class_count[vals] /= len(self.examples.values_of_attributes[self.target_attr])
 			giny_indx -= (class_count[vals] ** 2)
 			
 		return giny_indx
 
-	def informationGain(self, attr_indx):
+	def informationGain(self, attr):
 		entropy_change = self.entropy()
-		cont_child_nodes = self.splitNode(attr_indx)
+		cont_child_nodes = self.splitNode(attr)
 		
 		for val in cont_child_nodes:
-			prob = len(cont_child_nodes[val].examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
+			prob = len(cont_child_nodes[val].examples.values_of_attributes[self.target_attr]) / len(self.examples.values_of_attributes[self.target_attr])
 			entropy_change -= (prob * cont_child_nodes[val].entropy())
 
 		return entropy_change
 
-	def giniGain(self, attr_indx):
+	def giniGain(self, attr):
 		gini_change = self.ginnnyIndex()
-		cont_child_nodes = self.splitNode(attr_indx)
+		cont_child_nodes = self.splitNode(attr)
 		
 		for val in cont_child_nodes:
-			prob = len(cont_child_nodes[val].examples.values_of_attributes[-1]) / len(self.examples.values_of_attributes[-1])
+			prob = len(cont_child_nodes[val].examples.values_of_attributes[self.target_attr]) / len(self.examples.values_of_attributes[self.target_attr])
 			gini_change -= (prob * cont_child_nodes[val].ginnnyIndex())
 
 		return gini_change
@@ -170,40 +175,43 @@ class node:
 		# check if pure node
 		if(self.entropy() == 0):
 			return
-		best_gain = -1
-		best_attr_indx = -1
+		best_gain = 0
+		best_attr = ""
 
-		for cont_attr_index in range(len(self.examples.attributes) - 1):
+		for cont_attr in (self.examples.attributes):
+			if cont_attr == self.target_attr:
+				continue
 			ps_gain = 0
 			if(heuristic == 'information_gain'):
-				ps_gain = self.informationGain(cont_attr_index)
+				ps_gain = self.informationGain(cont_attr)
 			else:
-				ps_gain = self.giniGain(cont_attr_index)
+				ps_gain = self.giniGain(cont_attr)
 			
 			if ps_gain > best_gain:
 				best_gain = ps_gain
-				best_attr_indx = cont_attr_index
+				best_attr = cont_attr
 			
-		if(best_attr_indx == -1):
+		if(best_attr == ""):
 			return	
 		
-		self.children = self.splitNode(best_attr_indx)
-		self.split_attr_indx = best_attr_indx
+		self.children = self.splitNode(best_attr)
+		self.split_attr = best_attr
 
 class DecisionTree:
 
-	def __init__(self) -> None:
-		self.root = node()
+	def __init__(self, target) -> None:
+		self.root = node(target)
+		self.target_attr = target
 
 	def recursion_train(self, root, heuristic: str):
 		root.splitByHeuristic(heuristic)
 		for ch_val in root.children:
 			self.recursion_train(root.children[ch_val], heuristic)
 	
-	def predictInstance(self, example: list):
+	def predictInstance(self, example: dict):
 		ps_node = self.root
 		while(len(ps_node.children) > 0):
-			ps_val = example[ps_node.split_attr_indx]
+			ps_val = example[ps_node.split_attr]
 			if not ps_val in ps_node.children:
 				break
 			ps_node = ps_node.children[ps_val]
@@ -220,10 +228,10 @@ class DecisionTree:
 	# in leaf node at which test data arrives
 	def predictTest(self, test: data):
 		predictions = []
-		for ex_ind in range(len(test.values_of_attributes[0])):
-			test_inst = []
-			for attr_ind in range(len(test.attributes)):
-				test_inst.append(test.values_of_attributes[attr_ind][ex_ind])
+		for ex_ind in range(len(test.values_of_attributes[self.target_attr])):
+			test_inst = {}
+			for attr in test.attributes:
+				test_inst[attr] = (test.values_of_attributes[attr][ex_ind])
 			predictions.append(self.predictInstance(test_inst))
 		return predictions
 
@@ -233,34 +241,38 @@ class DecisionTree:
 		gt_corr = 0
 		tot = len(predictions)
 		for i in range(tot):
-			gt_corr += (predictions[i] == test.values_of_attributes[-1][i])
+			gt_corr += (predictions[i] == test.values_of_attributes[self.target_attr][i])
 		return gt_corr / tot
 	
 	# add the procedures to add accuracy check at each depth
 	def train(self, examples: data, heuristic: str, test: data) -> None:
 		# train in bfs format
 		self.root.giveExamples(examples)
-		queue = []
-		depths = []
-		queue.append(self.root)
-		depths.append(0)
+		queue = [self.root]
+		depths = [0]
+		values = [0]
 		i = 0
-		f_acc = open(heuristic + "_model_acc_chang" + ".csv", 'w')
-		f_acc.write("depth,accuracy\n")
+		# f_acc = open(heuristic + "_model_acc_chang" + ".csv", 'w')
+		# f_acc.write("depth,accuracy\n")
+		f = open(heuristic + ".txt", 'w')
 		while i < len(queue):
 			queue[i].splitByHeuristic(heuristic)
+			if i == 0 or depths[i] != depths[i - 1]:
+				f.write('\n')
+			f.write(str(queue[i].split_attr) + "," + str(values[i]) + "," + str(queue[i].entropy()) + "," + str(queue[i].examples.values_of_attributes[self.target_attr][0]) + "\t")
 			for val in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(queue[i].children[val])
-			f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test_data)) + '\n')
+				values.append(val)
+			# f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test_data)) + '\n')
 			i += 1
 		# following lines for testing
 		# we can add more checks
 		tot = 0
 		for i in range(len(queue) - 1, 0, -1):
 			if len(queue[i].children) == 0:
-				tot += len(queue[i].examples.values_of_attributes[0])
-		if tot != len(examples.values_of_attributes[0]):
+				tot += len(queue[i].examples.values_of_attributes[self.target_attr])
+		if tot != len(examples.values_of_attributes[self.target_attr]):
 			print("Something fishy")
 		else:
 			print("Tree is proper")
@@ -273,8 +285,10 @@ org_data.readByFile('data/train.csv')
 org_data.FillMissingVal()
 
 train_data, test_data = org_data.split(0.2)
+# train_data = org_data
+# test_data = org_data
 
-model = DecisionTree()
+model = DecisionTree('is_patient')
 model.train(train_data, 'information_gain', test_data)
 print(model.test_accuracy(test_data))
 
