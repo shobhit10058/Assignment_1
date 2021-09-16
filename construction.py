@@ -280,17 +280,52 @@ class DecisionTree:
 		# uncomment following for recursive training
 		# self.recursion_train(self.root, heuristic)
 
+	def prune(self, test: data):
+		run = 0
+		org_acc = self.test_accuracy(test)
+		print("starting_pruning")
+		while True:
+			queue = [self.root]
+			i = 0
+			org_acc = self.test_accuracy(test)
+			print("validation_acc =",org_acc)
+			print("pruning_run =", run + 1)
+			mx_acc = 0
+			mx_acc_node = self.root
+			while i < len(queue):
+				ps_ch = dict(queue[i].children)
+				queue[i].children = {}
+				ps_acc = self.test_accuracy(test)
+				if ps_acc > mx_acc:
+					mx_acc = ps_acc
+					mx_acc_node = queue[i]
+				queue[i].children = ps_ch
+				for val in (queue[i].children):
+					queue.append(queue[i].children[val])
+				i += 1
+			run += 1
+			if mx_acc > org_acc:
+				mx_acc_node.children = {}
+			else:
+				break
+		print("final_validation_acc =",org_acc)
+
 org_data = data()
 org_data.readByFile('data/train.csv')
 org_data.FillMissingVal()
 
-train_data, test_data = org_data.split(0.2)
+train_data, test_com_data = org_data.split(0.7)
+valid_data, test_data = test_com_data.split(0.5)
 # train_data = org_data
 # test_data = org_data
 
 model = DecisionTree('is_patient')
 model.train(train_data, 'information_gain', test_data)
-print(model.test_accuracy(test_data))
+print("starting_test_acc =", model.test_accuracy(test_data))
+model.prune(valid_data)
+print("test_acc =", model.test_accuracy(test_data))
 
 model.train(train_data, 'gini_gain', test_data)
-print(model.test_accuracy(test_data))
+print("starting_test_acc =", model.test_accuracy(test_data))
+model.prune(valid_data)
+print("test_acc =", model.test_accuracy(test_data))
