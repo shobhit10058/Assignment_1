@@ -7,7 +7,7 @@ org_data.FillMissingVal()
 org_data.processValueType()
 
 train_data, test_data = org_data.split(0.3)
-valid_data, test_data = test_data.split(0.4)
+valid_data, test_data = test_data.split(0.2)
 
 model = DecisionTree('is_patient')
 print("starting training with information gain")
