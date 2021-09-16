@@ -1,3 +1,4 @@
+<pre>
 Tree is proper
 starting_test_acc = 0.6595092024539877
 starting_pruning
@@ -29,3 +30,4 @@ final_validation_acc = 0.6928571428571428
 test_acc = 0.7300613496932515
 
 [ ,-1,0.8904916402194913,1.0 ]
+</pre>
