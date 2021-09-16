@@ -1,100 +1,5 @@
 from math import log2
-import random
-
-class data:
-	
-	def __init__(self) -> None:
-		self.attributes = set()
-		self.values_of_attributes = {}	
-	
-	def readByFile(self, input_file: str) -> None:
-		
-		with open(input_file) as inp:
-			self.attributes = list(inp.readline()[:-1].split(','))
-			self.values_of_attributes = {}
-
-			for attr in self.attributes:
-				self.values_of_attributes[attr] = []
-			
-			while(1):
-				read_str = inp.readline()[:-1]
-				if len(read_str) == 0:
-					break
-				ps_e = list(read_str.split(','))
-				indx = 0
-				for attr in self.attributes:
-					self.values_of_attributes[attr].append(ps_e[indx])
-					indx += 1
-			self.attributes = set(self.attributes)
-
-	def initAttr(self, attributes: set):
-		self.attributes = attributes
-		self.values_of_attributes = {attr:[] for attr in (self.attributes)}
-
-	def addExample(self, values: dict):
-		for attr in self.attributes:
-			self.values_of_attributes[attr].append(values[attr])
-
-	def getExample(self, ind):
-
-		any_attr = self.attributes.pop()
-		self.attributes.add(any_attr)
-		inst = {}
-		for attr in self.attributes:
-			inst[attr] = (self.values_of_attributes[attr][ind])
-		return inst
-		
-	def FillMissingVal(self) -> None:
-		for attr in (self.attributes):
-			co_vals = {}
-			ms_val = ""
-			ms_co  = 0
-			
-			for val_ind in range(len(self.values_of_attributes[attr])):
-				ps_v = self.values_of_attributes[attr][val_ind]
-				if len(ps_v) == 0:
-					continue
-				if not ps_v in co_vals:
-					co_vals[ps_v] = 0
-				co_vals[ps_v] += 1
-				if ms_co <= co_vals[ps_v]:
-					ms_co = co_vals[ps_v]
-					ms_val = ps_v
-			
-			for val_ind in range(len(self.values_of_attributes[attr])):
-				ps_v = self.values_of_attributes[attr][val_ind]
-				if len(ps_v) == 0:
-					self.values_of_attributes[attr][val_ind] = ms_val
-
-	def processValueType(self):
-		for attr in self.attributes:
-			for indx in range(len(self.values_of_attributes[attr])):
-				if attr == 'gender':
-					self.values_of_attributes[attr][indx] = (self.values_of_attributes[attr][indx] == 'Female')*1
-				else:
-					self.values_of_attributes[attr][indx] = float(self.values_of_attributes[attr][indx])
-
-	def split(self, test_frac):
-		any_attr = self.attributes.pop()
-		self.attributes.add(any_attr)
-		data_size = len(self.values_of_attributes[any_attr])
-		test_size = int(test_frac * data_size)
-		indices = [_ for _ in range(data_size)]
-		chosen_test_ind = set(random.sample(indices, test_size))
-		train_data = data()
-		test_data = data()
-		train_data.initAttr(self.attributes)
-		test_data.initAttr(self.attributes)
-		for ex_ind in range(data_size):
-			example = {}
-			for attr in (self.attributes):
-				example[attr] = (self.values_of_attributes[attr][ex_ind])
-			if ex_ind in chosen_test_ind:
-				test_data.addExample(example)
-			else:
-				train_data.addExample(example)
-			
-		return (train_data, test_data)
+from Data import data
 
 class node:
 
@@ -261,8 +166,6 @@ class DecisionTree:
 		class_count, maj = ps_node.getClassCount()
 		return maj
 
-	# use the value of target attribute stored in -1 index in values of attributes
-	# in leaf node at which test data arrives
 	def predictTest(self, test: data):
 		predictions = []
 		for ex_ind in range(len(test.values_of_attributes[self.target_attr])):
@@ -272,7 +175,6 @@ class DecisionTree:
 			predictions.append(self.predictInstance(test_inst))
 		return predictions
 
-	# implement the following accuracy test
 	def test_accuracy(self, test: data) -> float:
 		predictions = self.predictTest(test)
 		gt_corr = 0
@@ -281,39 +183,27 @@ class DecisionTree:
 			gt_corr += (predictions[i] == test.values_of_attributes[self.target_attr][i])
 		return gt_corr / tot
 	
-	# add the procedures to add accuracy check at each depth
-	def train(self, examples: data, heuristic: str, test: data) -> None:
+	def train(self, examples: data, heuristic: str, test: data, track_acc: bool) -> None:
 		# train in bfs format
 		self.root.giveExamples(examples)
 		queue = [self.root]
 		depths = [0]
 		i = 0
-		f_acc_d = open(heuristic + "_model_acc_chang_with_depth" + ".csv", 'w')
-		f_acc_n = open(heuristic + "_model_acc_chang_with_number_of_nodes" + ".csv", 'w')
-		f_acc_d.write("depth,accuracy\n")
-		f_acc_n.write("number of nodes,accuracy\n")
+		if track_acc:
+			f_acc_d = open(heuristic + "_model_acc_chang_with_depth" + ".csv", 'w')
+			f_acc_n = open(heuristic + "_model_acc_chang_with_number_of_nodes" + ".csv", 'w')
+			f_acc_d.write("depth,accuracy\n")
+			f_acc_n.write("number of nodes,accuracy\n")
 		while i < len(queue):
 			ps_acc = self.test_accuracy(test)
-			f_acc_d.write(str(depths[i]) + ',' + str(ps_acc) + '\n')
-			f_acc_n.write(str(len(queue)) + ',' + str(ps_acc) + '\n')
+			if track_acc:
+				f_acc_d.write(str(depths[i]) + ',' + str(ps_acc) + '\n')
+				f_acc_n.write(str(len(queue)) + ',' + str(ps_acc) + '\n')
 			queue[i].splitByHeuristic(heuristic)
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
 			i += 1
-		# following lines for testing
-		# we can add more checks
-		tot = 0
-		for i in range(len(queue) - 1, -1, -1):
-			if len(queue[i].children) == 0:
-				tot += len(queue[i].examples.values_of_attributes[self.target_attr])
-		if tot != len(examples.values_of_attributes[self.target_attr]):
-			print("Tree is not proper")
-		else:
-			print("Tree is proper")
-
-		# uncomment following for recursive training
-		# self.recursion_train(self.root, heuristic)
 
 	def prune(self, validation: data):
 		run = 0
@@ -359,28 +249,3 @@ class DecisionTree:
 				depths.append(depths[i] + 1)
 				queue.append(child)
 			i += 1
-
-org_data = data()
-org_data.readByFile('data/train.csv')
-org_data.FillMissingVal()
-org_data.processValueType()
-
-train_data, test_data = org_data.split(0.3)
-valid_data, test_data = test_data.split(0.4)
-
-model = DecisionTree('is_patient')
-print("starting training with information gain")
-model.train(train_data, 'information_gain', test_data)
-print("starting_test_acc =", model.test_accuracy(test_data))
-model.printTree('starting_tree_inf_gain.txt')
-model.prune(valid_data)
-print("test_acc =", model.test_accuracy(test_data),'\n')
-model.printTree('final_tree_inf_gain.txt')
-
-print("starting training with gini gain")
-model.train(train_data, 'gini_gain', test_data)
-print("starting_test_acc =", model.test_accuracy(test_data))
-model.printTree('starting_tree_gini_gain.txt')
-model.prune(valid_data)
-print("test_acc =", model.test_accuracy(test_data))
-model.printTree('final_tree_gini_gain.txt')
