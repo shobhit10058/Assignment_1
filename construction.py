@@ -299,7 +299,7 @@ class DecisionTree:
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
-			f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test_data)) + '\n')
+			f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test)) + '\n')
 			i += 1
 		# following lines for testing
 		# we can add more checks
@@ -324,7 +324,7 @@ class DecisionTree:
 			i = 0
 			org_acc = self.test_accuracy(validation)
 			print("validation_acc =",org_acc)
-			print("pruning_run =", run + 1)
+			print("pruning_run =", run)
 			mx_acc = 0
 			mx_acc_node = self.root
 			while i < len(queue):
@@ -339,18 +339,33 @@ class DecisionTree:
 				i += 1
 			run += 1
 			if mx_acc > org_acc:
+				mx_acc_node.split_attr = ""
+				mx_acc_node.split_attr_thrs = -1
 				mx_acc_node.children = []
 			else:
 				break
 		print("final_validation_acc =",org_acc)
+
+	def printTree(self):
+		queue = [self.root]
+		depths = [0]
+		i = 0
+		while i < len(queue):
+			if i == 0 or depths[i] != depths[i - 1]:
+				print()
+			print("[ " + str(queue[i].split_attr) + "," + str(queue[i].split_attr_thrs) + "," + str(queue[i].entropy()) + "," + str(queue[i].getClassCount()[1]) + " ]", end="\t")
+			for child in (queue[i].children):
+				depths.append(depths[i] + 1)
+				queue.append(child)
+			i += 1
 
 org_data = data()
 org_data.readByFile('data/train.csv')
 org_data.FillMissingVal()
 org_data.processValueType()
 
-train_data, test_com_data = org_data.split(0.7)
-valid_data, test_data = test_com_data.split(0.5)
+train_data, test_com_data = org_data.split(0.8)
+valid_data, test_data = test_com_data.split(0.7)
 # train_data = org_data
 # test_data = org_data
 
@@ -359,8 +374,10 @@ model.train(train_data, 'information_gain', test_data)
 print("starting_test_acc =", model.test_accuracy(test_data))
 model.prune(valid_data)
 print("test_acc =", model.test_accuracy(test_data))
+model.printTree()
 
 model.train(train_data, 'gini_gain', test_data)
 print("starting_test_acc =", model.test_accuracy(test_data))
 model.prune(valid_data)
 print("test_acc =", model.test_accuracy(test_data))
+model.printTree()
