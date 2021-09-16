@@ -280,14 +280,14 @@ class DecisionTree:
 		# uncomment following for recursive training
 		# self.recursion_train(self.root, heuristic)
 
-	def prune(self, test: data):
+	def prune(self, validation: data):
 		run = 0
-		org_acc = self.test_accuracy(test)
+		org_acc = self.test_accuracy(validation)
 		print("starting_pruning")
 		while True:
 			queue = [self.root]
 			i = 0
-			org_acc = self.test_accuracy(test)
+			org_acc = self.test_accuracy(validation)
 			print("validation_acc =",org_acc)
 			print("pruning_run =", run + 1)
 			mx_acc = 0
@@ -295,7 +295,7 @@ class DecisionTree:
 			while i < len(queue):
 				ps_ch = dict(queue[i].children)
 				queue[i].children = {}
-				ps_acc = self.test_accuracy(test)
+				ps_acc = self.test_accuracy(validation)
 				if ps_acc > mx_acc:
 					mx_acc = ps_acc
 					mx_acc_node = queue[i]
