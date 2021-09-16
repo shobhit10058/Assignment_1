@@ -1,33 +1,44 @@
 <pre>
 Tree is proper
-starting_test_acc = 0.6595092024539877
+starting_test_acc = 0.5920245398773006
 starting_pruning
-validation_acc = 0.7
+validation_acc = 0.6857142857142857
 pruning_run = 0
-validation_acc = 0.7285714285714285
+validation_acc = 0.8071428571428572
 pruning_run = 1
-validation_acc = 0.75
-pruning_run = 2
-final_validation_acc = 0.75
-test_acc = 0.6595092024539877
+final_validation_acc = 0.8071428571428572
+test_acc = 0.656441717791411 
 
-[ tot_bilirubin,2.7,0.8904916402194913,1.0 ]
-[ ag_ratio,86.5,0.964078764808229,1.0 ] [ ,-1,0.228538143953528,1.0 ]
-[ age,65.5,0.9901226308935798,1.0 ]     [ sgpt,4.95,0.39124356362925566,1.0 ]
-[ age,55.0,0.9998393017810485,1.0 ]     [ albumin,15.5,0.4689955935892812,1.0 ] [ sgpt,4.75,1.0,2.0 ]   [ ,-1,0.0,1.0 ]
-[ age,49.5,0.9852281360342515,1.0 ]     [ albumin,17.5,0.6840384356390417,2.0 ] [ ,-1,0.0,2.0 ] [ ,-1,0.0,1.0 ] [ ,-1,0.0,1.0 ] [ ,-1,0.0,2.0 ]
-[ sgpt,8.2,0.9957274520849255,1.0 ]     [ ,-1,0.0,1.0 ] [ ,-1,0.0,1.0 ] [ tot_proteins,557.0,0.4689955935892812,2.0 ]
-[ tot_bilirubin,1.25,0.9996995428565171,1.0 ]   [ ,-1,0.0,1.0 ] [ ,-1,0.0,2.0 ] [ ,-1,0.0,1.0 ]
-[ ,-1,0.9881108365218301,2.0 ]  [ tot_bilirubin,2.4000000000000004,0.7219280948873623,1.0 ]
-[ ,-1,0.0,1.0 ] [ ,-1,0.0,2.0 ] Tree is proper
-starting_test_acc = 0.6104294478527608
+starting training with information gain
+Tree is proper
+starting_test_acc = 0.5766871165644172
 starting_pruning
-validation_acc = 0.6285714285714286
+validation_acc = 0.6571428571428571
 pruning_run = 0
+validation_acc = 0.8071428571428572
+pruning_run = 1
+final_validation_acc = 0.8071428571428572
+test_acc = 0.656441717791411
+shobhit@shobhit-TUF-Gaming-FX505DT-FX505DT:~/Desktop/ECE_SEM5/Machine_learning/Assignment_1$ python3 -u "/home/shobhit/Desktop/ECE_SEM5/Machine_learning/Assignment_1/construction.py"
+starting training with information gain
+Tree is proper
+starting_test_acc = 0.7208588957055214
+starting_pruning
 validation_acc = 0.6928571428571428
+pruning_run = 0
+validation_acc = 0.7214285714285714
 pruning_run = 1
-final_validation_acc = 0.6928571428571428
-test_acc = 0.7300613496932515
+final_validation_acc = 0.7214285714285714
+test_acc = 0.6993865030674846 
 
-[ ,-1,0.8904916402194913,1.0 ]
+starting training with information gain
+Tree is proper
+starting_test_acc = 0.6625766871165644
+starting_pruning
+validation_acc = 0.6785714285714286
+pruning_run = 0
+validation_acc = 0.75
+pruning_run = 1
+final_validation_acc = 0.75
+test_acc = 0.7024539877300614
 </pre>

@@ -100,8 +100,8 @@ class node:
 
 	def __init__(self, target) -> None:
 		self.examples = data()
-		self.split_attr = ""
-		self.split_attr_thrs = -1
+		self.split_attr = 'none'
+		self.split_attr_thrs = 'none'
 		# list of nodes
 		self.children = []
 		self.target_attr = target
@@ -218,8 +218,8 @@ class node:
 		if(self.entropy() == 0):
 			return
 		best_gain = 0
-		best_attr = ""
-		best_attr_thrs = -1
+		best_attr = "none"
+		best_attr_thrs = "none"
 		for cont_attr in (self.examples.attributes):
 			if cont_attr == self.target_attr:
 				continue
@@ -339,21 +339,22 @@ class DecisionTree:
 				i += 1
 			run += 1
 			if mx_acc > org_acc:
-				mx_acc_node.split_attr = ""
-				mx_acc_node.split_attr_thrs = -1
+				mx_acc_node.split_attr = "none"
+				mx_acc_node.split_attr_thrs = 'none'
 				mx_acc_node.children = []
 			else:
 				break
 		print("final_validation_acc =",org_acc)
 
-	def printTree(self):
+	def printTree(self, file):
 		queue = [self.root]
 		depths = [0]
 		i = 0
+		f = open(file, 'w')
 		while i < len(queue):
-			if i == 0 or depths[i] != depths[i - 1]:
-				print()
-			print("[ " + str(queue[i].split_attr) + "," + str(queue[i].split_attr_thrs) + "," + str(queue[i].entropy()) + "," + str(queue[i].getClassCount()[1]) + " ]", end="\t")
+			if i > 0 and depths[i] != depths[i - 1]:
+				f.write('\n')
+			f.write("[ " + str(queue[i].split_attr) + "," + str(queue[i].split_attr_thrs) + "," + str(queue[i].entropy()) + "," + str(queue[i].getClassCount()[1]) + " ]" + "\t")
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
@@ -370,14 +371,18 @@ valid_data, test_data = test_com_data.split(0.7)
 # test_data = org_data
 
 model = DecisionTree('is_patient')
+print("starting training with information gain")
 model.train(train_data, 'information_gain', test_data)
 print("starting_test_acc =", model.test_accuracy(test_data))
+model.printTree('starting_tree_inf_gain.txt')
 model.prune(valid_data)
-print("test_acc =", model.test_accuracy(test_data))
-model.printTree()
+print("test_acc =", model.test_accuracy(test_data),'\n')
+model.printTree('final_tree_inf_gain.txt')
 
+print("starting training with information gain")
 model.train(train_data, 'gini_gain', test_data)
 print("starting_test_acc =", model.test_accuracy(test_data))
+model.printTree('starting_tree_gini_gain.txt')
 model.prune(valid_data)
 print("test_acc =", model.test_accuracy(test_data))
-model.printTree()
+model.printTree('final_tree_gini_gain.txt')
