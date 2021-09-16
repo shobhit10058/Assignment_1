@@ -288,18 +288,18 @@ class DecisionTree:
 		queue = [self.root]
 		depths = [0]
 		i = 0
-		f_acc = open(heuristic + "_model_acc_chang" + ".csv", 'w')
-		f_acc.write("depth,accuracy\n")
-		f = open(heuristic + ".txt", 'w')
+		f_acc_d = open(heuristic + "_model_acc_chang_with_depth" + ".csv", 'w')
+		f_acc_n = open(heuristic + "_model_acc_chang_with_number_of_nodes" + ".csv", 'w')
+		f_acc_d.write("depth,accuracy\n")
+		f_acc_n.write("number of nodes,accuracy\n")
 		while i < len(queue):
+			ps_acc = self.test_accuracy(test)
+			f_acc_d.write(str(depths[i]) + ',' + str(ps_acc) + '\n')
+			f_acc_n.write(str(len(queue)) + ',' + str(ps_acc) + '\n')
 			queue[i].splitByHeuristic(heuristic)
-			if i == 0 or depths[i] != depths[i - 1]:
-				f.write('\n')
-			f.write("[ " + str(queue[i].split_attr) + "," + str(queue[i].split_attr_thrs) + "," + str(queue[i].entropy()) + "," + str(queue[i].examples.values_of_attributes[self.target_attr][0]) + " ]" + "\t")
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
-			f_acc.write(str(depths[i]) + ',' + str(self.test_accuracy(test)) + '\n')
 			i += 1
 		# following lines for testing
 		# we can add more checks
@@ -308,7 +308,7 @@ class DecisionTree:
 			if len(queue[i].children) == 0:
 				tot += len(queue[i].examples.values_of_attributes[self.target_attr])
 		if tot != len(examples.values_of_attributes[self.target_attr]):
-			print("Something fishy")
+			print("Tree is not proper")
 		else:
 			print("Tree is proper")
 
@@ -354,7 +354,7 @@ class DecisionTree:
 		while i < len(queue):
 			if i > 0 and depths[i] != depths[i - 1]:
 				f.write('\n')
-			f.write("[ " + str(queue[i].split_attr) + "," + str(queue[i].split_attr_thrs) + "," + str(queue[i].entropy()) + "," + str(queue[i].getClassCount()[1]) + " ]" + "\t")
+			f.write("[ " + str(queue[i].split_attr) + " > " + str(queue[i].split_attr_thrs) + " ]\t")
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
@@ -366,7 +366,7 @@ org_data.FillMissingVal()
 org_data.processValueType()
 
 train_data, test_data = org_data.split(0.3)
-valid_data, test_data = test_data.split(0.5)
+valid_data, test_data = test_data.split(0.4)
 
 model = DecisionTree('is_patient')
 print("starting training with information gain")
