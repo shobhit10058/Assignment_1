@@ -81,6 +81,22 @@ class node:
 
 		return mx_gain_thrsh
 	
+	def chiSquare(self):
+		chi_val = 0
+		for child in self.children:
+			class_co, maj = self.getClassCount()
+			class_co_child, maj_ch = child.getClassCount()
+			ex_size_par = len(self.examples.values_of_attributes[self.target_attr])
+			ex_size_ch = len(child.examples.values_of_attributes[child.target_attr])
+			for val in class_co:
+				exp_val = (class_co[val] / ex_size_par) * ex_size_ch
+				org_val = 0
+				if val in class_co_child:
+					org_val = class_co_child[val]
+				chi_val += (((org_val - exp_val)**2) / exp_val)
+		
+		return chi_val
+
 	def entropy(self):
 		class_count, maj = self.getClassCount()
 		entropy_value = 0
@@ -152,11 +168,6 @@ class DecisionTree:
 	def __init__(self, target) -> None:
 		self.root = node(target)
 		self.target_attr = target
-
-	def recursion_train(self, root, heuristic: str):
-		root.splitByHeuristic(heuristic)
-		for ch_val in root.children:
-			self.recursion_train(root.children[ch_val], heuristic)
 	
 	def predictInstance(self, example: dict):
 		ps_node = self.root
@@ -183,7 +194,7 @@ class DecisionTree:
 			gt_corr += (predictions[i] == test.values_of_attributes[self.target_attr][i])
 		return gt_corr / tot
 	
-	def train(self, examples: data, heuristic: str, test: data, track_acc: bool) -> None:
+	def train(self, examples: data, heuristic: str, test = None, track_acc = False) -> None:
 		# train in bfs format
 		self.root.giveExamples(examples)
 		queue = [self.root]
@@ -195,8 +206,8 @@ class DecisionTree:
 			f_acc_d.write("depth,accuracy\n")
 			f_acc_n.write("number of nodes,accuracy\n")
 		while i < len(queue):
-			ps_acc = self.test_accuracy(test)
 			if track_acc:
+				ps_acc = self.test_accuracy(test)
 				f_acc_d.write(str(depths[i]) + ',' + str(ps_acc) + '\n')
 				f_acc_n.write(str(len(queue)) + ',' + str(ps_acc) + '\n')
 			queue[i].splitByHeuristic(heuristic)
@@ -205,7 +216,7 @@ class DecisionTree:
 				queue.append(child)
 			i += 1
 
-	def prune(self, validation: data):
+	def pruneByCrossValidation(self, validation: data):
 		run = 0
 		org_acc = self.test_accuracy(validation)
 		print("starting_pruning")
@@ -236,6 +247,21 @@ class DecisionTree:
 				break
 		print("final_validation_acc =",org_acc)
 
+	def pruneByChiSquare(self, threshold):
+		queue = [self.root]
+		i = 0
+		train_acc = 0
+		while i < len(queue):
+			if queue[i].chiSquare() < threshold:
+				queue[i].children = []
+			if len(queue[i].children) == 0:
+				class_co, maj = queue[i].getClassCount()
+				train_acc += class_co[maj]
+			queue.extend(queue[i].children)	
+			i += 1
+		train_acc /= len(self.root.examples.values_of_attributes[self.target_attr])
+		return train_acc
+	
 	def printTree(self, file):
 		queue = [self.root]
 		depths = [0]
