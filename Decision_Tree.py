@@ -284,9 +284,9 @@ class DecisionTree:
 			if i > 0 and depths[i] != depths[i - 1]:
 				f.write('\n')
 			if queue[i].split_attr != "none":
-				f.write("[ " + str(queue[i].split_attr) + " > " + str(queue[i].split_attr_thrs) + " ]\t")
+				f.write("[ " + str(queue[i].split_attr) + " > " + str(round(queue[i].split_attr_thrs,2)) + " ]\t")
 			else:
-				f.write("[ target value = " + (str)(int(queue[i].getClassCount()[1])) + " ]\t")
+				f.write("[ " + self.target_attr + " = " + (str)(int(queue[i].getClassCount()[1])) + " ]\t")
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
