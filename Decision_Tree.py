@@ -198,23 +198,36 @@ class DecisionTree:
 		# train in bfs format
 		self.root.giveExamples(examples)
 		queue = [self.root]
-		depths = [0]
+		depths = [1]
 		i = 0
 		if track_acc:
-			f_acc_d = open(heuristic + "_model_acc_chang_with_depth" + ".csv", 'w')
-			f_acc_n = open(heuristic + "_model_acc_chang_with_number_of_nodes" + ".csv", 'w')
-			f_acc_d.write("depth,accuracy\n")
-			f_acc_n.write("number of nodes,accuracy\n")
+			import matplotlib.pyplot as plt
+			accuracy = []
+			num_of_node = []
 		while i < len(queue):
 			if track_acc:
-				ps_acc = self.test_accuracy(test)
-				f_acc_d.write(str(depths[i]) + ',' + str(ps_acc) + '\n')
-				f_acc_n.write(str(len(queue)) + ',' + str(ps_acc) + '\n')
+				accuracy.append(self.test_accuracy(test))
+				num_of_node.append(len(queue))
 			queue[i].splitByHeuristic(heuristic)
 			for child in (queue[i].children):
 				depths.append(depths[i] + 1)
 				queue.append(child)
 			i += 1
+
+		if track_acc:
+			plt.plot(depths, accuracy)
+			plt.xlabel("depth of tree")
+			plt.ylabel("accuracy")
+			plt.savefig("acc_chang_with_depth.png")
+			plt.show()
+			plt.close()
+
+			plt.plot(num_of_node, accuracy)
+			plt.xlabel("number of nodes")
+			plt.ylabel("accuracy")
+			plt.savefig("acc_chang_with_number_of_nodes.png")
+			plt.show()
+			plt.close()
 
 	def pruneByCrossValidation(self, validation: data):
 		run = 0
