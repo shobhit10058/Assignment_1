@@ -33,8 +33,9 @@ while thrs < 40:
 	thresholds.append(thrs)
 	test_accs.append(ps_acc)
 
-print("The max test accuracy obtained is" ,max_acc, "at", max_thr ,"threshold")
 figure, ax = plt.subplots()
 ax.plot(thresholds, test_accs)
-ax.plot(thresholds, train_accs) 
+ax.plot(thresholds, train_accs)
+ax.set_title('test_and_training_accuracy_vs_threshold') 
+plt.savefig('test_and_training_accuracy_vs_threshold.png')
 plt.show()
