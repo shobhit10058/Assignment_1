@@ -1,5 +1,5 @@
-from Data import data
-from Decision_Tree import DecisionTree
+from data import data
+from decision_tree import DecisionTree
 
 org_data = data()
 org_data.readByFile('data/train.csv')

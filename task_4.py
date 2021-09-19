@@ -1,5 +1,5 @@
-from Data import data
-from Decision_Tree import DecisionTree
+from data import data
+from decision_tree import DecisionTree
 import matplotlib.pyplot as plt
 
 org_data = data()
@@ -41,7 +41,11 @@ plt.savefig('test_and_training_accuracy_vs_threshold.png')
 plt.show()
 plt.close()
 
-# generating the final model
+#generating the final model
+"""
+After several runs, we find out that threshold = 5.5 works reasonably
+good for most train-test splits. Hence, we choose 5.5 as the threshold.
+"""
 chosen_thrsh = 5.5
 train_data, test_data = org_data.split(0.2)
 model = DecisionTree('is_patient')
