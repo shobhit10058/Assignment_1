@@ -277,7 +277,7 @@ class DecisionTree:
 	
 	def printTree(self, file):
 		queue = [self.root]
-		depths = [0]
+		depths = [1]
 		i = 0
 		f = open(file, 'w')
 		while i < len(queue):
