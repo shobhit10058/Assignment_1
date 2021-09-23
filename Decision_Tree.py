@@ -1,5 +1,5 @@
 from math import log2
-from Data import data
+from data import data
 
 class node:
 
